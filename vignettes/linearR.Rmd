@@ -1,0 +1,36 @@
+---
+title: "linearR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{linearR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+# Introduction
+
+The `linearR` package provides a custom implementation of the linear regression function `my_lm`, along with associated methods for summary, prediction, and printing. This vignette demonstrates the usage of the functions and compares them with the base R `lm` function to verify correctness and efficiency.
+
+```{r setup}
+library(linearR)
+library(bench)
+```
+
+# Basic Usage
+```{r}
+# Fit a simple linear regression
+data(mtcars)
+fit1 <- my_lm(mpg ~ wt, data = mtcars)
+summary_linearR(fit1)
+
+# Compare with built-in lm()
+fit2 <- lm(mpg ~ wt, data = mtcars)
+summary(fit2)
+```
+
