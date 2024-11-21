@@ -18,8 +18,28 @@
 #' summary(fit)
 #' @export
 my_lm <- function(formula, data) {
+  # Check for NULL or empty data
+  if (is.null(data) || nrow(data) == 0) {
+    stop("empty or NULL data")
+  }
+
+  # Check for missing values in data first
+  vars <- all.vars(formula)
+  if (any(sapply(data[vars], is.na))) {
+    stop("missing values in model frame")
+  }
+
   # Extract model frame
-  mf <- model.frame(formula, data)
+  tryCatch({
+    mf <- model.frame(formula, data)
+  }, error = function(e) {
+    stop("error in model frame: ", e$message)
+  })
+
+  # Additional check for missing values in model frame
+  if (anyNA(mf)) {
+    stop("missing values in model frame")
+  }
 
   # Extract terms and xlevels
   terms <- attr(mf, "terms")
@@ -33,9 +53,18 @@ my_lm <- function(formula, data) {
   n <- nrow(X)
   p <- ncol(X)
 
+  # Check for insufficient degrees of freedom
+  if (n <= p) {
+    stop("insufficient degrees of freedom")
+  }
+
   # Calculate coefficients
   XtX <- t(X) %*% X
-  XtX_inv <- solve(XtX)
+  tryCatch({
+    XtX_inv <- solve(XtX)
+  }, error = function(e) {
+    stop("system is exactly singular")
+  })
   Xty <- t(X) %*% y
   coefficients <- XtX_inv %*% Xty
 
@@ -103,16 +132,21 @@ my_lm <- function(formula, data) {
 #' summary_linearR(fit)
 #' @export
 summary_linearR <- function(object, ...) {
+  # Create coefficients table
   coef_table <- data.frame(
     Estimate = object$coefficients,
-    `Std. Error` = object$se,
-    `t value` = object$tstat,
-    `Pr(>|t|)` = object$pval
+    "Std. Error" = object$se,
+    "t value" = object$tstat,
+    "Pr(>|t|)" = object$pval
   )
+
+  # Convert to matrix to match lm output
+  coef_matrix <- as.matrix(coef_table)
+  rownames(coef_matrix) <- names(object$coefficients)
 
   structure(list(
     call = object$call,
-    coefficients = coef_table,
+    coefficients = coef_matrix,
     r.squared = object$r.squared,
     adj.r.squared = object$adj.r.squared,
     sigma = sqrt(object$sigma2),
@@ -182,12 +216,22 @@ predict_linearR <- function(object, newdata = NULL,
     X <- object$X
     pred <- object$fitted
   } else {
+    # Check for missing values in newdata
+    if (any(sapply(newdata, is.na))) {
+      stop("missing values in 'newdata'")
+    }
+
     # Create model matrix from newdata
     tt <- terms(object$formula)
     Terms <- delete.response(tt)
-    mf <- model.frame(Terms, newdata, xlev = object$xlevels)
-    X <- as.matrix(model.matrix(Terms, mf))  # Ensure X is a matrix
-    pred <- as.numeric(X %*% object$coefficients)  # Ensure predictions are numeric
+    tryCatch({
+      mf <- model.frame(Terms, newdata, xlev = object$xlevels)
+      X <- model.matrix(Terms, mf)
+    }, error = function(e) {
+      stop("variables in 'newdata' do not match the model")
+    })
+
+    pred <- as.numeric(X %*% object$coefficients)
   }
 
   if (interval == "none") {
