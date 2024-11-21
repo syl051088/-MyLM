@@ -249,7 +249,7 @@ library(covr)
 report()
 ```
 
-**Note**: The package achieves 100% code coverage, indicating that all lines of code are executed by the tests.
+**Note**: The package only achieves 98.35% code coverage.
 
 ### Example of a Unit Test
 
