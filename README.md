@@ -4,11 +4,6 @@
 [![Codecov test coverage](https://codecov.io/gh/syl051088/-MyLM/graph/badge.svg)](https://app.codecov.io/gh/syl051088/-MyLM)
 <!-- badges: end -->
 
-# linearR
-
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/linearR)](https://cran.r-project.org/package=linearR)
-[![Travis-CI Build Status](https://travis-ci.org/yourusername/linearR.svg?branch=master)](https://travis-ci.org/yourusername/linearR)
-
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -39,7 +34,7 @@ You can install the `linearR` package from GitHub using the `devtools` package:
 install.packages("devtools")
 
 # Install linearR from GitHub
-devtools::install_github("yourusername/linearR")
+devtools::install_github("syl051088/linearR")
 ```
 
 Alternatively, if the package is available on CRAN, you can install it directly:
