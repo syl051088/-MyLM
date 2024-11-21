@@ -34,13 +34,7 @@ You can install the `linearR` package from GitHub using the `devtools` package:
 install.packages("devtools")
 
 # Install linearR from GitHub
-devtools::install_github("syl051088/linearR")
-```
-
-Alternatively, if the package is available on CRAN, you can install it directly:
-
-```R
-install.packages("linearR")
+devtools::install_github("syl051088/MyLm")
 ```
 
 ## Functions and Usage
