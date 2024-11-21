@@ -23,10 +23,15 @@ my_lm <- function(formula, data) {
     stop("empty or NULL data")
   }
 
-  # Check for missing values in data first
+  # Check for NAs in variables used in formula
   vars <- all.vars(formula)
-  if (any(sapply(data[vars], is.na))) {
-    stop("missing values in model frame")
+  for(var in vars) {
+    if(!var %in% names(data)) {
+      stop(paste("variable", var, "not found in data"))
+    }
+    if(any(is.na(data[[var]]))) {
+      stop("missing values in model frame")
+    }
   }
 
   # Extract model frame
@@ -66,20 +71,23 @@ my_lm <- function(formula, data) {
     stop("system is exactly singular")
   })
   Xty <- t(X) %*% y
-  coefficients <- XtX_inv %*% Xty
+  coefficients <- drop(XtX_inv %*% Xty)  # Use drop() to convert to vector
+  names(coefficients) <- colnames(X)      # Add names from X matrix
 
   # Calculate fitted values and residuals
-  fitted <- X %*% coefficients
-  residuals <- y - fitted
+  fitted <- drop(X %*% coefficients)
+  residuals <- drop(y - fitted)
 
   # Calculate standard errors
   sigma2 <- sum(residuals^2) / (n - p)
   vcov <- sigma2 * XtX_inv
-  se <- sqrt(diag(vcov))
+  se <- drop(sqrt(diag(vcov)))
+  names(se) <- names(coefficients)        # Add names to standard errors
 
   # Calculate t-statistics and p-values
   tstat <- coefficients / se
   pval <- 2 * pt(abs(tstat), df = n - p, lower.tail = FALSE)
+  names(tstat) <- names(pval) <- names(coefficients)  # Add names to t-stats and p-values
 
   # Calculate R-squared
   r_squared <- 1 - sum(residuals^2) / sum((y - mean(y))^2)
@@ -87,12 +95,12 @@ my_lm <- function(formula, data) {
 
   # Return results
   structure(list(
-    coefficients = as.vector(coefficients),
-    se = as.vector(se),
-    tstat = as.vector(tstat),
-    pval = as.vector(pval),
-    residuals = as.vector(residuals),
-    fitted = as.vector(fitted),
+    coefficients = coefficients,
+    se = se,
+    tstat = tstat,
+    pval = pval,
+    residuals = residuals,
+    fitted = fitted,
     r.squared = r_squared,
     adj.r.squared = adj_r_squared,
     formula = formula,
